@@ -1,4 +1,5 @@
 import plantaModel from "../models/plantasModel.js";
+import cuidadoModel from "../models/cuidadosModel.js";
 
 const createPlanta = async (req, res) => {
     try {
@@ -41,21 +42,28 @@ const getPlantasById = async (req, res) => {
 };
 
 const getPlantas = async (req, res) => {
-    const { name } = req.query;
+    const { name, limit, sort } = req.query;
     try {
         let plantas;
-        if (name) {
-            plantas = await plantaModel.find({ nombre: name }).populate('cuidados');
-        } else {
-            plantas = await plantaModel.find().populate('cuidados');
+        const query = name ? { nombre: name } : {};
+        const options = {};
+
+        if (limit) {
+            options.limit = parseInt(limit);
         }
+
+        if (sort) {
+            options.sort = sort;
+        }
+
+        plantas = await plantaModel.find(query, null, options).populate('cuidados');
+
         res.status(200).json({ msg: "success", data: plantas });
     } catch (error) {
         res.status(500).json({ msg: "error", data: [] });
         console.error(error);
     }
 };
-
 const updatePlantas = async (req, res) =>{
     try {
         const plantas = await plantaModel.findByIdAndUpdate();
