@@ -14,14 +14,10 @@ const plantaSchema = new mongoose.Schema({
       required: true,
       enum: ['cactus', 'suculenta', 'flor', 'arbusto', 'árbol'],
     },
-    ubicacion: {
-      type: String,
-      required: true,
-    },
-    fecha_registro: {
-      type: Date,
-      default: Date.now,
-    },
+    cuidados: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Cuidados'
+  }]
   });
 
 const plantaModel = mongoose.model(plantaCollection,plantaSchema);
