@@ -5,9 +5,8 @@ const createPlanta = async (req, res) => {
     try {
         const { name, tipo, cuidados } = req.body;
 
-        // Verificar y/o crear cuidados
         const cuidadoIds = await Promise.all(cuidados.map(async (cuidado) => {
-            let existingCuidado = await cuidadoModel.findOne({descripcion: cuidado.descripcion, frecuencia: cuidado.frecuencia });
+            let existingCuidado = await cuidadoModel.findOne({tipo: cuidado.tipo, descripcion: cuidado.descripcion, frecuencia: cuidado.frecuencia });
             if (!existingCuidado) {
                 existingCuidado = new cuidadoModel(cuidado);
                 await existingCuidado.save();
@@ -15,7 +14,6 @@ const createPlanta = async (req, res) => {
             return existingCuidado._id;
         }));
 
-        // Crear la nueva planta con los cuidados asociados
         const nuevaPlanta = new plantaModel({
             name,
             tipo,
@@ -45,7 +43,7 @@ const getPlantas = async (req, res) => {
     const { name, limit, sort } = req.query;
     try {
         let plantas;
-        const query = name ? { nombre: name } : {};
+        const query = name ? { name: name } : {};
         const options = {};
 
         if (limit) {

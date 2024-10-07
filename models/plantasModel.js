@@ -12,7 +12,6 @@ const plantaSchema = new mongoose.Schema({
     tipo: {
       type: String,
       required: true,
-      enum: ['cactus', 'suculenta', 'flor', 'arbusto', 'árbol'],
     },
     cuidados: [{
       type: Schema.Types.ObjectId,
