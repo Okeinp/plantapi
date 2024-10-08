@@ -1,8 +1,13 @@
 import plantaModel from "../models/plantasModel.js";
 import cuidadoModel from "../models/cuidadosModel.js";
+import { plantasValidation } from "../validation/validation.js";
 
 const createPlanta = async (req, res) => {
-    try {
+    const { error } = plantasValidation(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details.map(err => err.message).join(", ") });
+    }
+        try {
         const { name, tipo, cuidados } = req.body;
 
         const cuidadoIds = await Promise.all(cuidados.map(async (cuidado) => {
