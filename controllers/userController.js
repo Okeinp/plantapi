@@ -1,27 +1,32 @@
+
 import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const auth = (req, res, next) => {
     const headersToken = req.headers.authorization;
 
     if (headersToken) {
         const token = headersToken.split(" ")[1];
-        const secretKey = "clavesupersecreta";
+        const secretKey = process.env.JWT_SECRET; // Asegúrate de usar la variable de entorno
 
         jwt.verify(token, secretKey, (err, payload) => {
             if (err) {
-                console.error(err);
-                return res.status(401).json({ message: "Token no válido" });
+                console.error("Error al verificar el token:", err.message); // Log de error detallado
+                return res.status(401).json({ message: "Token inválido o expirado" });
             }
-
-            req.user = payload; 
+            console.log("Token verificado:", payload); // Para verificar que el token es correcto
+            req.user = payload; // Almacenar el payload para uso futuro
             next();
         });
     } else {
         return res.status(401).json({ message: "No se proporcionó un token" });
     }
 };
+
 
 const getAllUsers = async (req, res) => {
     try {
@@ -32,16 +37,18 @@ const getAllUsers = async (req, res) => {
     }
 };
 
+
+
 const createUser = async (req, res) => {
     const { name, lastname, username, password, email } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Elimina esta línea: const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new userModel({
             name,
             lastname,
             username,
-            password: hashedPassword, 
+            password,  // Password en texto plano
             email
         });
 
@@ -52,6 +59,7 @@ const createUser = async (req, res) => {
         res.status(500).json({ message: "Error en el servidor", error });
     }
 };
+
 
 const loginUser = async (req, res) => {
     const { password, email } = req.body;
@@ -64,12 +72,14 @@ const loginUser = async (req, res) => {
         }
 
         const validPassword = await bcrypt.compare(password, user.password);
+        console.log(`Password valid: ${validPassword}`); // Log temporal
 
         if (!validPassword) {
             return res.status(401).json({ message: "Contraseña incorrecta" });
         }
 
-        const token = jwt.sign({ id: user._id, email: user.email }, "clavesupersecreta", { expiresIn: "1h" });
+        // Usa la variable de entorno para JWT_SECRET
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.status(200).json({ token });
     } catch (error) {
         console.error(error);
@@ -92,7 +102,9 @@ const getUsersById = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error en el servidor", error });
     }
-}   
+};
+
+
 
 const updateUser = async (req, res) => {
     const userId = req.params.id;
@@ -109,7 +121,6 @@ const updateUser = async (req, res) => {
         res.status(500).json({ message: "Error en el servidor", error });
     }
 };
-
 
 const deleteUser = async (req, res) => {
     const userId = req.params.id;
