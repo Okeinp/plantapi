@@ -45,10 +45,19 @@ const getPlantasById = async (req, res) => {
 };
 
 const getPlantas = async (req, res) => {
-    const { name, limit, sort } = req.query;
+    const { name, tipo, cuidados, limit, sort } = req.query;
     try {
         let plantas;
-        const query = name ? { name: name } : {};
+        const query = {};
+        if (name) {
+            query.name = name;
+        }
+        if (tipo) {
+            query.tipo = tipo;
+        }
+        if (cuidados) {
+            query.cuidados = cuidados;
+        }
         const options = {};
 
         if (limit) {
