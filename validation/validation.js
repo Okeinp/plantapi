@@ -27,7 +27,6 @@ const plantaSchema = Joi.object({
     }),
 });
 
-// Función de validación
 const plantasValidation = (data) => {
     return plantaSchema.validate(data, { abortEarly: false }); 
 };

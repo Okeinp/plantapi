@@ -3,11 +3,11 @@ import { getAllUsers, getUsersById, createUser, loginUser, updateUser, deleteUse
 
 const router = express.Router();
 
-// Rutas públicas
+
 router.post('/register', createUser);
 router.post('/login', loginUser);
 
-// Rutas protegidas
+
 router.get('/', auth, getAllUsers);
 router.get('/:id', auth, getUsersById);
 router.put('/:id', auth, updateUser);

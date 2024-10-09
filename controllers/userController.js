@@ -11,15 +11,15 @@ const auth = (req, res, next) => {
 
     if (headersToken) {
         const token = headersToken.split(" ")[1];
-        const secretKey = process.env.JWT_SECRET; // Asegúrate de usar la variable de entorno
+        const secretKey = process.env.JWT_SECRET; 
 
         jwt.verify(token, secretKey, (err, payload) => {
             if (err) {
-                console.error("Error al verificar el token:", err.message); // Log de error detallado
+                console.error("Error al verificar el token:", err.message); 
                 return res.status(401).json({ message: "Token inválido o expirado" });
             }
-            console.log("Token verificado:", payload); // Para verificar que el token es correcto
-            req.user = payload; // Almacenar el payload para uso futuro
+            console.log("Token verificado:", payload); 
+            req.user = payload; 
             next();
         });
     } else {
@@ -43,12 +43,12 @@ const createUser = async (req, res) => {
     const { name, lastname, username, password, email } = req.body;
 
     try {
-        // Elimina esta línea: const hashedPassword = await bcrypt.hash(password, 10);
+        
         const newUser = new userModel({
             name,
             lastname,
             username,
-            password,  // Password en texto plano
+            password,  
             email
         });
 
@@ -72,13 +72,13 @@ const loginUser = async (req, res) => {
         }
 
         const validPassword = await bcrypt.compare(password, user.password);
-        console.log(`Password valid: ${validPassword}`); // Log temporal
+        console.log(`Password valid: ${validPassword}`); 
 
         if (!validPassword) {
             return res.status(401).json({ message: "Contraseña incorrecta" });
         }
 
-        // Usa la variable de entorno para JWT_SECRET
+        
         const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.status(200).json({ token });
     } catch (error) {
