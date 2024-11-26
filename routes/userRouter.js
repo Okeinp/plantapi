@@ -13,4 +13,8 @@ router.get('/:id', auth, getUsersById);
 router.put('/:id', auth, updateUser);
 router.delete('/:id', auth, deleteUser);
 
+router.get('/auth/check', auth, (req, res) => {
+    res.status(200).json({ message: "Autenticado" });
+});
+
 export default router;

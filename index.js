@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
+import cors from "cors";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -18,11 +18,17 @@ const __dirname = dirname(__filename);
 
 app.use(express.static(path.join(__dirname, 'resources')));
 
+const corsOptions = {
+    origin: 'http://localhost:5173',
+    credentials: true
+};
+
+app.use(cors(corsOptions));
+routerAPI(app);
+
 app.get('/', (req,res) =>{
     res.status(200).sendFile(path.join(__dirname, 'resources', 'views', 'index.html'));
 })
-
-routerAPI(app);
 
 mongoose.connect(mongoURI)
     .then(() => {

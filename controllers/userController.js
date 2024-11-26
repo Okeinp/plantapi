@@ -1,8 +1,8 @@
-
 import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
+import { userValidation } from "../validation/validation.js";
 dotenv.config();
 
 
@@ -40,6 +40,11 @@ const getAllUsers = async (req, res) => {
 
 
 const createUser = async (req, res) => {
+    const { error } = userValidation(req.body);
+    if (error) {
+        return res.status(400).json({ message: "Error de validación", errors: error.details });
+    }
+
     const { name, lastname, username, password, email } = req.body;
 
     try {
@@ -64,9 +69,11 @@ const loginUser = async (req, res) => {
     const { password, email } = req.body;
 
     try {
+        console.log("Intentando iniciar sesión con:", email);
         const user = await userModel.findOne({ email });
 
         if (!user) {
+            console.error("Usuario no encontrado");
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
@@ -74,14 +81,14 @@ const loginUser = async (req, res) => {
         console.log(`Password valid: ${validPassword}`); 
 
         if (!validPassword) {
+            console.error("Contraseña incorrecta");
             return res.status(401).json({ message: "Contraseña incorrecta" });
         }
 
-       
         const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.status(200).json({ token });
     } catch (error) {
-        console.error(error);
+        console.error("Error en el servidor:", error);
         res.status(500).json({ message: "Error en el servidor", error });
     }
 };

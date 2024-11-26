@@ -1,9 +1,14 @@
 import cuidadosModel from "../models/cuidadosModel.js";
+import { cuidadoValidation } from "../validation/validation.js";
 
 const createCuidado = async (req, res) => {
+    const { error } = cuidadoValidation(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details.map(err => err.message).join(", ") });
+    }
     try {
-        const { descripcion, frecuencia } = req.body;
-        const nuevoCuidado = new cuidadosModel({ descripcion, frecuencia });
+        const { tipo, descripcion, frecuencia } = req.body;
+        const nuevoCuidado = new cuidadosModel({ tipo, descripcion, frecuencia });
         await nuevoCuidado.save();
         res.status(201).json({ message: "Cuidado creado exitosamente", data: nuevoCuidado });
     } catch (error) {
@@ -34,9 +39,13 @@ const getCuidadosById = async (req, res) => {
 
 const updateCuidados = async (req, res) => {
     const { id } = req.params;
-    const { descripcion, frecuencia } = req.body;
+    const { error } = cuidadoSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details.map(err => err.message).join(", ") });
+    }
+    const { tipo, descripcion, frecuencia } = req.body;
     try {
-        const cuidado = await cuidadosModel.findByIdAndUpdate(id, { descripcion, frecuencia }, { new: true });
+        const cuidado = await cuidadosModel.findByIdAndUpdate(id, { tipo, descripcion, frecuencia }, { new: true });
         res.status(200).json({ msg: "success", data: cuidado });
     } catch (error) {
         res.status(500).json({ msg: "error", data: [] });

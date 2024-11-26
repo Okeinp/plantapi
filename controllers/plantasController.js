@@ -7,11 +7,11 @@ const createPlanta = async (req, res) => {
     if (error) {
         return res.status(400).json({ message: error.details.map(err => err.message).join(", ") });
     }
-        try {
+    try {
         const { name, tipo, cuidados } = req.body;
 
         const cuidadoIds = await Promise.all(cuidados.map(async (cuidado) => {
-            let existingCuidado = await cuidadoModel.findOne({tipo: cuidado.tipo, descripcion: cuidado.descripcion, frecuencia: cuidado.frecuencia });
+            let existingCuidado = await cuidadoModel.findOne({ tipo: cuidado.tipo, descripcion: cuidado.descripcion, frecuencia: cuidado.frecuencia });
             if (!existingCuidado) {
                 existingCuidado = new cuidadoModel(cuidado);
                 await existingCuidado.save();
@@ -27,7 +27,9 @@ const createPlanta = async (req, res) => {
 
         await nuevaPlanta.save();
 
-        res.status(201).json({ message: "Planta creada exitosamente", data: nuevaPlanta });
+        const populatedPlanta = await plantaModel.findById(nuevaPlanta._id).populate('cuidados');
+
+        res.status(201).json({ message: "Planta creada exitosamente", data: populatedPlanta });
     } catch (error) {
         res.status(500).json({ message: "Error al crear la planta", error: error.message });
     }
@@ -76,29 +78,41 @@ const getPlantas = async (req, res) => {
         console.error(error);
     }
 };
-const updatePlantas = async (req, res) =>{
-    try {
-        const plantas = await plantaModel.findByIdAndUpdate();
-        res.status(200).json({ msg: "success", data: plantas })
 
-    } catch (error) {
-        res.status(500).json({ msg: "error", data: [] })
-        console.error(error);
-        
+const updatePlantas = async (req, res) => {
+    const { id } = req.params;
+    const { error } = plantasValidation(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details.map(err => err.message).join(", ") });
     }
-}
+    const { name, tipo, cuidados } = req.body;
+    try {
+        const cuidadoIds = await Promise.all(cuidados.map(async (cuidado) => {
+            let existingCuidado = await cuidadoModel.findOne({ tipo: cuidado.tipo, descripcion: cuidado.descripcion, frecuencia: cuidado.frecuencia });
+            if (!existingCuidado) {
+                existingCuidado = new cuidadoModel(cuidado);
+                await existingCuidado.save();
+            }
+            return existingCuidado._id;
+        }));
 
-const deletePlantasById = async (req, res) =>{
+        const planta = await plantaModel.findByIdAndUpdate(id, { name, tipo, cuidados: cuidadoIds }, { new: true }).populate('cuidados');
+        res.status(200).json({ msg: "success", data: planta });
+    } catch (error) {
+        res.status(500).json({ msg: "error", data: [] });
+        console.error(error);
+    }
+};
+
+const deletePlantasById = async (req, res) => {
     const { id } = req.params;
     try {
-        const plantas = await plantaModel.findByIdAndDelete(id);
-        res.status(200).json({ msg: "success", data: plantas })
-
+        const planta = await plantaModel.findByIdAndDelete(id);
+        res.status(200).json({ msg: "success", data: planta });
     } catch (error) {
-        res.status(500).json({ msg: "error", data: [] })
+        res.status(500).json({ msg: "error", data: [] });
         console.error(error);
-        
     }
-}
+};
 
-export { createPlanta, getPlantasById, getPlantas, updatePlantas, deletePlantasById,}
+export { createPlanta, getPlantasById, getPlantas, updatePlantas, deletePlantasById };
